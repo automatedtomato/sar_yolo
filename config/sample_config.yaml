@@ -1,0 +1,38 @@
+model:
+  input_size: 416
+  n_classes: 1 # labels
+  grid_sizes: [13, 26, 52]
+  anchors:
+    - [[116, 90], [156, 198], [373, 326]] # Scale 1: 8x8
+    - [[30, 61], [62, 45], [59, 119]] # Scale 2: 16x16
+    - [[10, 13], [16, 30], [33, 23]] # Scale 3: 32x32
+
+data:
+  bucket_name: 'sar-dataset'
+  img_ext: '.png'
+  annot_ext: '.txt'
+  img_path: 'data/new_dataset3/train/images'
+  annot_path: 'data/new_dataset3/train/labels'
+
+training:
+  batch_size: 16
+  n_jobs: 4
+  shuffle: true
+  pin_memory: true
+
+loss:
+  lambda_coord: 5.0
+  lambda_obj: 1.0
+  lambda_noobj: 0.5
+  lambda_class: 1.0
+  obj_threshold: 0.5
+
+optimizer:
+  type: 'adam'
+  lr: 0.001
+  weight_decay: 0.0005
+
+experimets:
+  name: 'yolov3_experiment_001'
+  save_dir: './experiments/'
+  log_interval: 100

@@ -17,3 +17,5 @@ VAL_DATA = 'data/new_dataset3/val'
 TEST_DATA = 'data/new_dataset3/test'
 
 ALL_LABELS = 'data/new_dataset3/All labels with Pose information/labels'
+
+CONFIG_PATH = os.path.join(PROJECT_ROOT, 'config')
