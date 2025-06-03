@@ -1,0 +1,13 @@
+numpy
+pandas
+scikit-learn
+pillow
+torch
+torchvision
+ipykernel
+matplotlib
+seaborn
+google-cloud-storage
+opencv-python
+ultralytics
+python-dotenv
