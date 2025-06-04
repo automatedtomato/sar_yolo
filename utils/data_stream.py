@@ -84,7 +84,7 @@ class DataStream:
             if file_extension == ".json":
                 # TODO: implement json loading
                 pass
-            
+
         except Exception as e:
             logger.error(f"Failed to load annotation from {file_path}: {e}")
 
@@ -97,7 +97,7 @@ class DataStream:
         img_prefix: str,
         annot_prefix: str,
         output_size: int = -1,
-        return_sep: bool=False
+        return_sep: bool = False,
     ) -> list:
         """
         Generate a list of data tuples (image, annotation).
@@ -130,25 +130,25 @@ class DataStream:
                     break
 
             if matched_annot is not None:
-                
+
                 if return_sep:
                     images.append(img_file)
                     annots.append(matched_annot)
-                    
+
                 else:
                     paired_files.append((img_file, matched_annot))
 
             else:
-                logger.error(f'No matching annotation found for image {img_file}')
-                
+                logger.error(f"No matching annotation found for image {img_file}")
+
                 return None
-        
+
         if return_sep:
             if output_size != -1:
                 return sorted(images[:output_size]), sorted(annots[:output_size])
             else:
                 return sorted(images), sorted(annots)
-            
+
         else:
             if output_size != -1:
                 return paired_files[:output_size]

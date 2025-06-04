@@ -23,9 +23,9 @@ class YOLOv3Head(nn.Module):
             ResidualBlock(channels=1024, use_residuals=False, n_iters=1),
             CNNBlock(
                 in_channels=1024, out_channels=512, kernel_size=1, stride=1, padding=0
-            )
+            ),
         )
-        
+
         self.scale_pred_1 = ScalePrediction(in_channels=512, n_classes=self.n_classes)
 
         # Upsampling
@@ -48,9 +48,9 @@ class YOLOv3Head(nn.Module):
             ResidualBlock(channels=512, use_residuals=False, n_iters=1),
             CNNBlock(
                 in_channels=512, out_channels=256, kernel_size=1, stride=1, padding=0
-            )
+            ),
         )
-        
+
         self.scale_pred_2 = ScalePrediction(in_channels=256, n_classes=self.n_classes)
 
         self.upsample_2 = nn.Sequential(
@@ -72,14 +72,14 @@ class YOLOv3Head(nn.Module):
             ResidualBlock(channels=256, use_residuals=False, n_iters=1),
             CNNBlock(
                 in_channels=256, out_channels=128, kernel_size=1, stride=1, padding=0
-            )
+            ),
         )
-        
+
         self.scale_pred_3 = ScalePrediction(in_channels=128, n_classes=self.n_classes)
 
     def forward(self, deepest_feature_map, route_connection_2, route_connection_1):
         outputs = []
-        
+
         # Predict scale1 (8x8)
         x = deepest_feature_map
         x = self.predict_1(x)
@@ -90,19 +90,23 @@ class YOLOv3Head(nn.Module):
         x_up = self.upsample_1(x)
 
         # Concatenate
-        x_concat = torch.cat((x_up, route_connection_2), dim=1)  # 256 + Darknet53: 512 = 768ch
+        x_concat = torch.cat(
+            (x_up, route_connection_2), dim=1
+        )  # 256 + Darknet53: 512 = 768ch
 
         # Predict scale2 (16x16)
         x = x_concat
         x = self.predict_2(x_concat)
         pred_2 = self.scale_pred_2(x)
         outputs.append(pred_2)
-        
+
         # Upsample 256 to 128, 16x16 to 32x32
         x_up = self.upsample_2(x)
-        
+
         # Concatenate
-        x_concat = torch.cat((x_up, route_connection_1), dim=1)  # 128 + Darknet53: 256 = 384ch
+        x_concat = torch.cat(
+            (x_up, route_connection_1), dim=1
+        )  # 128 + Darknet53: 256 = 384ch
 
         # Predict scale3 (32x32)
         x = x_concat

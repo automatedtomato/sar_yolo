@@ -1,0 +1,51 @@
+model:
+  input_size: 608
+  n_classes: 1 # labels
+  grid_sizes: [13, 26, 52] # 416/32, 416/16, 416/8  
+  anchors:
+    - [[116, 90], [156, 198], [373, 326]] # Scale 1: for 13x13 gird (32x32 downsampling)
+    - [[30, 61], [62, 45], [59, 119]] # Scale 2: for 26x26 grid (16x16 downsampling)
+    - [[10, 13], [16, 30], [33, 23]] # Scale 3: for 52x52 grid (8x8 downsampling)
+
+data:
+  bucket_name: 'sar-dataset'
+  img_ext: '.png'
+  annot_ext: '.txt'
+
+  train:
+    img_path: 'data/new_dataset3/train/images'
+    annot_path: 'data/new_dataset3/train/labels'
+  val:
+    img_path: 'data/new_dataset3/val/images'
+    annot_path: 'data/new_dataset3/val/labels'
+  test:
+    img_path: 'data/new_dataset3/test/images'
+    annot_path: 'data/new_dataset3/test/labels'
+
+dataloader:
+  batch_size: 4
+  num_workers: 4
+  pin_memory: true
+
+training:
+  n_epochs: 3
+  patience: None
+  save_path: '001_sample_best_model.pt'
+  log_interval: 5
+
+loss:
+  lambda_coord: 5.0
+  lambda_obj: 1.0
+  lambda_noobj: 0.5
+  lambda_class: 1.0
+  obj_threshold: 0.5
+
+optimizer:
+  type: 'adam'
+  lr: 0.0005
+  weight_decay: 0.0005
+
+experimets:
+  name: 'yolov3_experiment_001'
+  save_dir: './experiments/'
+  log_interval: 100

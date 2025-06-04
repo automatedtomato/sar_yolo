@@ -19,7 +19,10 @@ class ResidualBlock(nn.Module):
                     nn.BatchNorm2d(num_features=channels // 2),
                     nn.LeakyReLU(negative_slope=0.1),
                     nn.Conv2d(
-                        in_channels=channels // 2, out_channels=channels, kernel_size=3, padding=1
+                        in_channels=channels // 2,
+                        out_channels=channels,
+                        kernel_size=3,
+                        padding=1,
                     ),
                     nn.BatchNorm2d(num_features=channels),
                     nn.LeakyReLU(negative_slope=0.1),
