@@ -16,7 +16,7 @@ data:
 
 training:
   batch_size: 16
-  n_jobs: 4
+  num_workers: 4
   shuffle: true
   pin_memory: true
 
