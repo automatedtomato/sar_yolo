@@ -1,11 +1,11 @@
 model:
-  input_size: 608
+  input_size: 416
   n_classes: 1 # labels
   grid_sizes: [13, 26, 52] # 416/32, 416/16, 416/8  
   anchors:
-    - [[116, 90], [156, 198], [373, 326]] # Scale 1: for 13x13 gird (32x32 downsampling)
-    - [[30, 61], [62, 45], [59, 119]] # Scale 2: for 26x26 grid (16x16 downsampling)
-    - [[10, 13], [16, 30], [33, 23]] # Scale 3: for 52x52 grid (8x8 downsampling)
+    - [[37.0, 24.0], [29.0, 50.0], [55.0, 30.0]] # Scale 1: for 13x13 gird (32x32 downsampling)
+    - [[11.0, 22.0], [25.0, 18.0], [19.0, 33.0]] # Scale 2: for 26x26 grid (16x16 downsampling)
+    - [[4.0, 5.0], [7.0, 12.0], [15.0, 11.0]] # Scale 3: for 52x52 grid (8x8 downsampling)
 
 data:
   bucket_name: 'sar-dataset'
@@ -23,15 +23,15 @@ data:
     annot_path: 'data/new_dataset3/test/labels'
 
 dataloader:
-  batch_size: 4
+  batch_size: 16
   num_workers: 4
   pin_memory: true
 
 training:
-  n_epochs: 3
-  patience: None
+  n_epochs: 10
+  patience: null
   save_path: '001_sample_best_model.pt'
-  log_interval: 5
+  log_interval: 16
 
 loss:
   lambda_coord: 5.0
@@ -42,7 +42,7 @@ loss:
 
 optimizer:
   type: 'adam'
-  lr: 0.0005
+  lr: 0.001
   weight_decay: 0.0005
 
 experimets:
