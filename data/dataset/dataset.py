@@ -211,11 +211,12 @@ class SaRDataset(Dataset):
                 target[best_anchor, grid_y, grid_x, 3] = height
                 target[best_anchor, grid_y, grid_x, 4] = 1.0  # objectness score
 
-                final_class = class_id if label == -1 else label
-                if final_class >= self.n_classes:
-                    target[best_anchor, grid_y, grid_x, 5 + final_class] = (
-                        1.0  # objectness score
-                    )
+                if self.n_classes > 0:
+                    final_class = class_id if label == -1 else label
+                    if final_class < self.n_classes:
+                        target[best_anchor, grid_y, grid_x, 5 + final_class] = (
+                            1.0  # objectness score
+                        )
 
             targets.append(target)
 

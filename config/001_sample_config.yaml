@@ -1,0 +1,62 @@
+data:
+  annot_ext: .txt
+  bucket_name: sar-dataset
+  img_ext: .png
+  test:
+    annot_path: data/new_dataset3/test/labels
+    img_path: data/new_dataset3/test/images
+  train:
+    annot_path: data/new_dataset3/train/labels
+    img_path: data/new_dataset3/train/images
+  val:
+    annot_path: data/new_dataset3/val/labels
+    img_path: data/new_dataset3/val/images
+dataloader:
+  batch_size: 8
+  num_workers: 4
+  pin_memory: true
+experimets:
+  log_interval: 100
+  name: yolov3_experiment_001
+  save_dir: ./experiments/
+loss:
+  lambda_class: 1.0
+  lambda_coord: 5.0
+  lambda_noobj: 0.5
+  lambda_obj: 1.0
+  obj_threshold: 0.5
+model:
+  anchors:
+  - - - 36.0
+      - 24.0
+    - - 29.0
+      - 50.0
+    - - 55.0
+      - 30.0
+  - - - 11.0
+      - 22.0
+    - - 25.0
+      - 17.0
+    - - 18.0
+      - 33.0
+  - - - 4.0
+      - 5.0
+    - - 7.0
+      - 12.0
+    - - 15.0
+      - 11.0
+  grid_sizes:
+  - 13
+  - 26
+  - 52
+  input_size: 416
+  n_classes: 0
+optimizer:
+  lr: 0.001
+  type: adam
+  weight_decay: 0.001
+training:
+  log_interval: 20
+  n_epochs: 30
+  patience: 5
+  save_path: 001_sample_best_model.pt

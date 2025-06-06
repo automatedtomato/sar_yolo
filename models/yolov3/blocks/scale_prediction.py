@@ -3,9 +3,11 @@ import torch.nn as nn
 
 
 class ScalePrediction(nn.Module):
-    def __init__(self, in_channels: int, n_classes: int):
+    def __init__(self, in_channels: int, n_classes: int=0):
 
         super().__init__()
+        
+        self.n_classes = n_classes
 
         # Prediction layer (3 anchors, 5 outputs)
         self.pred = nn.Sequential(
@@ -24,7 +26,6 @@ class ScalePrediction(nn.Module):
             ),
         )
 
-        self.n_classes = n_classes
 
     def forward(self, x):
         output = self.pred(x)

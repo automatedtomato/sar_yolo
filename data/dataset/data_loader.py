@@ -32,6 +32,9 @@ def create_dataloader(
     train_config = config["data"]["train"]
     val_config = config["data"]["val"]
     test_config = config["data"]["test"]
+    
+    if load_ratio > 1.0 or load_ratio <= 0.0:
+        raise ValueError("Load ratio must be between 0.0(not included) and 1.0")
 
     train_dataset = SaRDataset(
         data_stream=data_stream,
@@ -46,9 +49,6 @@ def create_dataloader(
         output_size=output_size,
         transform=transform,
     )
-
-    if load_ratio > 1.0 or load_ratio <= 0.0:
-        raise ValueError("Load ratio must be between 0.0(not included) and 1.0")
 
     train_dataset = Subset(train_dataset, range(int(len(train_dataset) * load_ratio)))
 
