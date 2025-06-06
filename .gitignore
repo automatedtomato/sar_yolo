@@ -195,4 +195,4 @@ cython_debug/
 .cursorindexingignore
 
 # PyTorch Model
-.pt
+*.pt
