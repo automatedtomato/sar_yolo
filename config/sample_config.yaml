@@ -12,7 +12,7 @@ data:
     annot_path: data/new_dataset3/val/labels
     img_path: data/new_dataset3/val/images
 dataloader:
-  batch_size: 16
+  batch_size: 8
   num_workers: 4
   pin_memory: true
 experimets:
@@ -27,16 +27,16 @@ loss:
   obj_threshold: 0.5
 model:
   anchors:
-  - - - 38.0
-      - 25.0
+  - - - 36.0
+      - 24.0
     - - 29.0
       - 50.0
-    - - 56.0
+    - - 55.0
       - 30.0
   - - - 11.0
       - 22.0
     - - 25.0
-      - 18.0
+      - 17.0
     - - 18.0
       - 33.0
   - - - 4.0
@@ -44,7 +44,7 @@ model:
     - - 7.0
       - 12.0
     - - 15.0
-      - 12.0
+      - 11.0
   grid_sizes:
   - 13
   - 26
@@ -52,11 +52,11 @@ model:
   input_size: 416
   n_classes: 1
 optimizer:
-  lr: 0.001
+  lr: 0.0005
   type: adam
   weight_decay: 0.0005
 training:
-  log_interval: 16
-  n_epochs: 10
-  patience: null
-  save_path: 001_sample_best_model.pt
+  log_interval: 20
+  n_epochs: 30
+  patience: 5
+  save_path: 002_sample_best_model.pt
