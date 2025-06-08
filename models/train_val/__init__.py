@@ -1,2 +1,2 @@
-from .train_val import *
+from .train import *
 from .evaluation import *

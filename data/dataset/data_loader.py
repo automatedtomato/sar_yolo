@@ -112,7 +112,7 @@ def create_dataloader(
     )
 
     print(
-        f"Train Samples: {train_dataset.__len__()}, Val Samples: {val_dataset.__len__()}, Test Samples: {test_dataset.__len__()}"
+        f"\nTrain Samples: {train_dataset.__len__()}, Val Samples: {val_dataset.__len__()}, Test Samples: {test_dataset.__len__()}"
     )
 
     return train_loader, val_loader, test_loader

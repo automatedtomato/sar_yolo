@@ -15,10 +15,6 @@ dataloader:
   batch_size: 8
   num_workers: 4
   pin_memory: true
-experimets:
-  log_interval: 100
-  name: yolov3_experiment_001
-  save_dir: ./experiments/
 loss:
   lambda_class: 1.0
   lambda_coord: 5.0
@@ -26,6 +22,7 @@ loss:
   lambda_obj: 1.0
   obj_threshold: 0.5
 model:
+  name: yolov3_sample_004
   anchors:
   - - - 36.0
       - 24.0
@@ -62,4 +59,8 @@ training:
   patience: 5
   save_path: 004_best_model.pt
 evaluating:
+  iou_threshold: 0.5
+  nms_threshold: 0.5
+  conf_threshold: 0.5
   fig_path: figures/004_lr.png
+  metrics_path: metrics/004_metrics.csv
