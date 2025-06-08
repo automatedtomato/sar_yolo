@@ -14,14 +14,29 @@ class AnchorOptimizer:
     Optimize anchors for YOLOv3
 
     Args:
+    === Either config or config_path must be provided ===
         data_stream (DataStream): DataStream object instance
-        config_path (dict[str, Any]): Configuration dictionary
+        config (dict[str, Any], optional): Configuration dictionary
+        config_path (str): Configuration file path
     """
 
-    def __init__(self, data_stream: DataStream, config_path: str):
+    def __init__(self, data_stream: DataStream, config: dict[str, Any] = None, config_path: str=None):
         self.data_stream = data_stream
-        self.config_path = config_path
-        self.config = load_config(config_path)
+        
+        if config is None and config_path is not None:
+            self.config_path = config_path
+            self.config = load_config(config_path)
+            
+        elif config is not None and config_path is None:
+            self.config = config
+            
+        elif config is not None and config_path is not None:
+            logger.warining("Both config and config_path are provided. Using config_path.")
+            self.config_path = config_path
+            self.config = load_config(config_path)
+
+        else:
+            raise ValueError("Either config or config_path must be provided")
 
     def calc_box_dimensions(
         self, dataset_type: str = "train"

@@ -1247,3 +1247,22 @@ def visualize_training_predictions(
     )
     
     logger.info(f"Visualizations saved to {save_dir}")
+    
+    
+def learning_curve(train_history: dict[str, list[float]], val_history: dict[str, list[float]], show_fig: bool=True, save_path: str=None) -> None:
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(12, 6))
+    for i, key in enumerate(train_history.keys()):
+        plt.subplot(2, 3, i + 1)
+        plt.plot(train_history[key], label=f'Training {key}')
+        plt.plot(val_history[key], label=f'Validation {key}')
+        plt.title(f'{key} Over Epochs')
+        plt.xlabel('Epoch', fontsize=10)
+        plt.ylabel('Metric', fontsize=10)
+    plt.tight_layout()
+    plt.legend()
+    if save_path is not None:
+        plt.savefig(save_path)
+    if show_fig:
+        plt.show()
+    logger.info(f"Learning curve saved to {save_path}")
