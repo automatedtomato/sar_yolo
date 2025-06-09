@@ -39,13 +39,14 @@ class YOLOv3Evaluator:
         config_path: str = None,
         ):
         
+        # ===== One of config or config_path must be provided =====
         if config is not None and config_path is None:
             self.config = config
             
-        if config is None and config_path is not None:
+        elif config is None and config_path is not None:
             self.config = load_config(config_path)
         
-        if config is not None and config_path is not None:
+        elif config is not None and config_path is not None:
             logger.warining("Both config and config_path are provided. Using config_path.")
             self.config = load_config(config_path)
         else:
@@ -55,6 +56,8 @@ class YOLOv3Evaluator:
         self.anchors = torch.tensor(config['model']['anchors']).to(device)
         self.grid_sizes = config['model']['grid_sizes']
         self.img_size = config['model']['input_size']
+        
+        print(f"\n{__name__}:: YOLOv3 evaluator initialized.")
         
     # ========== Fundamental utilitiies ==========
     
@@ -68,7 +71,7 @@ class YOLOv3Evaluator:
             boxes (torch.Tensor): Bounding boxes (in xyxy format) (N, 4)
         """
         
-        x_center, y_center, width, height = boxes.unbined(-1) # retruns tuple x_center, y_center, width, height
+        x_center, y_center, width, height = boxes.unbind(-1) # retruns tuple x_center, y_center, width, height
         x1 = x_center - width / 2
         y1 = y_center - height / 2
         x2 = x_center + width / 2
@@ -228,18 +231,18 @@ class YOLOv3Evaluator:
         n_anchors, grid_h, grid_w, _ = scale_output.shape
         
         # Make grid coordinates
-        gird_y, grid_x = torch.meshgrid(
+        grid_y, grid_x = torch.meshgrid(
             torch.arange(grid_h),
             torch.arange(grid_w),
             indexing='ij'
         )
-        gird_x = grid_x.to(self.device).float()
-        grid_y = gird_y.to(self.device).float()
+        grid_x = grid_x.to(self.device).float()
+        grid_y = grid_y.to(self.device).float()
         
         boxes = []
         scores = []
         
-        for anchor_idx, anchor in enumerate(n_anchors):
+        for anchor_idx in range(n_anchors):
             anchor_pred = scale_output[anchor_idx] # (h, w, (num_classes + 5))
             
             # Get predictions
@@ -263,8 +266,8 @@ class YOLOv3Evaluator:
             pred_conf = pred_conf.flatten()
             
             # Create boxes and scores
-            anchor_boxes = torch.stack(
-                pred_x, pred_y, pred_w, pred_h,
+            anchor_boxes = torch.stack((
+                pred_x, pred_y, pred_w, pred_h),
                 dim = 1
             )
             
@@ -316,7 +319,7 @@ class YOLOv3Evaluator:
         """
         all_tp = []
         all_fp = []
-        total_gt = []
+        total_gt = 0
         total_iou = 0.0
         n_matched = 0
         
@@ -324,8 +327,9 @@ class YOLOv3Evaluator:
             if len(gt) == 0:
                 # No ground truth
                 if len(pred['boxes']) > 0:
-                    all_fp.append(len(pred['boxes']))
+                    all_fp.extend[1] * len(pred['boxes'])
                 continue
+            
             
             total_gt += len(gt)
             
@@ -333,26 +337,26 @@ class YOLOv3Evaluator:
                 # No prediction
                 continue
             
-        # Calculate IoU
-        pred_boxes_xyxy = pred['boxes']
-        gt_boxes_xyxy = self.xywh2xyxy(gt[:, 1:5]) # [class, x, y, w, h] -> [x1, y1, x2, y2]
-        
-        iou_matrix = self.calculate_iou(pred_boxes_xyxy, gt_boxes_xyxy)
-        
-        # Matching
-        tp, fp, matched_ious = self._match_predictions(
-            pred['scores'],
-            iou_matrix,
-            iou_threshold
-        )
-        
-        all_tp.extend(tp)
-        all_fp.extend(fp)
-        
-        if len(matched_ious) > 0:
-            total_iou += sum(matched_ious)
-            num_matched += len(matched_ious)
+            # Calculate IoU
+            pred_boxes_xyxy = pred['boxes']
+            gt_boxes_xyxy = self.xywh2xyxy(gt[:, 1:5]) # [class, x, y, w, h] -> [x1, y1, x2, y2]
             
+            iou_matrix = self.calculate_iou(pred_boxes_xyxy, gt_boxes_xyxy)
+            
+            # Matching
+            tp, fp, matched_ious = self._match_predictions(
+                pred['scores'],
+                iou_matrix,
+                iou_threshold
+            )
+        
+            all_tp.extend(tp)
+            all_fp.extend(fp)
+            
+            if len(matched_ious) > 0:
+                total_iou += sum(matched_ious)
+                num_matched += len(matched_ious)
+                
         # Calculate metrics
         n_tp = sum(all_tp)
         n_fp = sum(all_fp)
@@ -368,7 +372,6 @@ class YOLOv3Evaluator:
             all_fp,
             total_gt
         )
-        
         
         if return_each:
             mAP, precision, recall, avg_iou
@@ -502,13 +505,15 @@ class YOLOv3Evaluator:
                 f1_score (float): F1 score
                 
             else:
-                metrics (dict[str, float]): Dictionary of metrics
+                results (dict[str, float]): Dictionary of metrics
         """
         eval_config = config.get('evaluating', {})
         iou_threshold = eval_config.get('iou_threshold', 0.5)
         conf_threshold = eval_config.get('conf_threshold', 0.5)
         nms_threshold = eval_config.get('nms_threshold', 0.4)
         
+        print(f"\n{__name__}:: Evaluating model...")
+        model = model.to(self.device)
         model.eval()
         all_preds = []
         all_targets = []
@@ -520,9 +525,9 @@ class YOLOv3Evaluator:
                 targets = [target.to(self.device) for target in targets]
                 
                 outputs = model(images)
-                loss = yolo_loss(outputs, targets, **self.config['loss'])
+                losses = yolo_loss(outputs, targets, **self.config['loss'])
                 
-                total_loss = min(total_loss, loss.item())
+                total_loss += losses['total_loss'].item()
                 
                 # Get predictions
                 batch_preds = self.postprocess_raw_outputs(
@@ -534,6 +539,7 @@ class YOLOv3Evaluator:
                 all_preds.extend(batch_preds)
                 all_targets.extend(targets)
                 
+                            
         if return_each:        
             mAP, precision, recall, avg_iou = self.calculate_metrics(all_preds, all_targets, iou_threshold, return_each)
             
@@ -562,9 +568,9 @@ class YOLOv3Evaluator:
             
             results = {
                 'model': self.config['model']['name'] if model_name is None else model_name,
-                'n_epochs': self.config['train']['n_epochs'],
-                'learning_rate': self.config['train']['learning_rate'],
-                'weight_decay': self.config['train']['weight_decay'],
+                'n_epochs': self.config['training']['n_epochs'],
+                'learning_rate': self.config['optimizer']['lr'],
+                'weight_decay': self.config['optimizer']['weight_decay'],
                 'batch_size': self.config['dataloader']['batch_size'],
                 'accumulation_steps': self.config['training']['accumulation_steps'],
                 'total_loss': round(total_loss/len(test_loader), 4),

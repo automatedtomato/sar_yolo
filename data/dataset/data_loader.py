@@ -35,6 +35,9 @@ def create_dataloader(
     
     if load_ratio > 1.0 or load_ratio <= 0.0:
         raise ValueError("Load ratio must be between 0.0(not included) and 1.0")
+    
+    model_grid_sizes = config['model']['grid_sizes']
+    model_n_classes = config['model']['n_classes']
 
     train_dataset = SaRDataset(
         data_stream=data_stream,
@@ -57,7 +60,7 @@ def create_dataloader(
         batch_size=config["dataloader"]["batch_size"],
         shuffle=True,
         num_workers=config["dataloader"]["num_workers"],
-        collate_fn=collate_fn,
+        collate_fn=lambda batch: collate_fn(batch, model_grid_sizes, model_n_classes),
         pin_memory=config["dataloader"]["pin_memory"],
     )
 
@@ -82,7 +85,7 @@ def create_dataloader(
         batch_size=config["dataloader"]["batch_size"],
         shuffle=False,
         num_workers=config["dataloader"]["num_workers"],
-        collate_fn=collate_fn,
+        collate_fn=lambda batch: collate_fn(batch, model_grid_sizes, model_n_classes),
         pin_memory=config["dataloader"]["pin_memory"],
     )
 
@@ -107,12 +110,12 @@ def create_dataloader(
         batch_size=config["dataloader"]["batch_size"],
         shuffle=False,
         num_workers=config["dataloader"]["num_workers"],
-        collate_fn=collate_fn,
+        collate_fn=lambda batch: collate_fn(batch, model_grid_sizes, model_n_classes),
         pin_memory=config["dataloader"]["pin_memory"],
     )
 
     print(
-        f"\nTrain Samples: {train_dataset.__len__()}, Val Samples: {val_dataset.__len__()}, Test Samples: {test_dataset.__len__()}"
+        f"\n{__name__}:: Train Samples: {train_dataset.__len__()}, Val Samples: {val_dataset.__len__()}, Test Samples: {test_dataset.__len__()}"
     )
 
     return train_loader, val_loader, test_loader
@@ -120,6 +123,8 @@ def create_dataloader(
 
 def collate_fn(
     batch: list[tuple[torch.Tensor, list[torch.Tensor]]],
+    grid_sizes: list[int],
+    n_classes: int=0,
 ) -> tuple[torch.Tensor, list[torch.Tensor]]:
     """
     Custom collate function for DataLoader
@@ -146,9 +151,12 @@ def collate_fn(
         if targets_batch[i]:
             targets_batch[i] = torch.stack(targets_batch[i])
         else:  # if no targets, create zero tensor
-            grid_size = [13, 26, 52][i]
+            grid_size = grid_sizes[i]
             targets_batch[i] = torch.zeros(
-                1, grid_size, grid_size, 5 + batch[0][1][i].shaep[-1] - 5
+                batch[0][0].shape[0], # use batch_size from image if available
+                grid_size,
+                grid_size,
+                5 + n_classes
             )
 
     return images_batch, targets_batch

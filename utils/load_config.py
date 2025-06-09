@@ -19,6 +19,7 @@ def load_config(config_path: str) -> dict[str, Any]:
     try:
         with open(config_path, "r") as f:
             config = yaml.safe_load(f)
+        print(f"\n{__name__}:: Loaded config from {config_path}")
         return config
 
     except Exception as e:
@@ -41,9 +42,10 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
 
     deafult_config = {
         "model": {
+            "name": "sample",
             "input_size": 416,
-            "n_classes": 3,
-            "grid_size": [13, 26, 52],
+            "n_classes": 6,
+            "grid_sizes": [13, 26, 52],
             "anchors": [
                 [(116, 90), (156, 198), (373, 326)],  # Scale 1: 8x8
                 [(30, 61), (62, 45), (59, 119)],  # Scale 2: 16x16
@@ -54,14 +56,31 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
             "bucket_name": "sar-dataset",
             "img_ext": ".png",
             "annot_ext": ".txt",
-            "img_path": "data/new_dataset3/train/images",
-            "annot_path": "data/new_dataset3/All labels with Pose information/labels",
+            "test": {
+                "img_path": "data/new_dataset3/test/images",
+                "annot_path": "data/new_dataset3/All labels with Pose information/labels",
+            },
+            "train": {
+                "img_path": "data/new_dataset3/train/images",
+                "annot_path": "data/new_dataset3/All labels with Pose information/labels",
+            },
+            "val": {
+                "img_path": "data/new_dataset3/val/images",
+                "annot_path": "data/new_dataset3/All labels with Pose information/labels",
+            },
         },
+        "dataloader":{
+            "batch_size": 8,
+            "num_workers": 4,
+            "pin_memory": True
+            },
+        
         "training": {
-            "batch_size": 16,
-            "n_jobs": 4,
-            "shuffle": True,
-            "pin_memory": True,
+            "log_interval": 100,
+            "accumulation_steps": 1,
+            "n_epochs": 10,
+            "patience": 3,
+            "save_path": "sample.pt"
         },
         "loss": {
             "lambda_coord": 5,
@@ -71,7 +90,13 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
             "obj_threshold": 0.5,
         },
         "optimizer": {"type": "adam", "lr": 1e-3, "weight_decay": 5e-4},
-        "device": "cuda",
+        "evaluating": {
+            "iou_threshold": 0.5,
+            "nms_threshold": 0.5,
+            "conf_threshold": 0.5,
+            "fig_path": "figures/sample_lr.png",
+            "metrics_path": "metrics/sample_metrics.csv"
+        }
     }
 
     def _merge_config(default: dict, user: dict) -> dict:
@@ -97,4 +122,5 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     ):
         raise ValueError("Number of classes is required / should be positive integer")
 
+    print(f"\n{__name__}:: Validated config: {valid_config}")
     return valid_config

@@ -6,7 +6,8 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
-def main():
+if __name__ == "__main__":
+    
     """
     Main function: Training and evaluation pipeline
     
@@ -14,6 +15,10 @@ def main():
         config (str): Path to configuration file
         --bucket (str): Name of the bucket where the data is stored: default to "sar-dataset"
         --optim_anchor (bool): Optimize anchors with K-means clustering: default to False
+        --no-transform (bool): If this flag is set, data transforms will not be applied
+        
+    Usage:
+        python main.py config.yaml --bucket sar-dataset --optim_anchor
     """
     
     # Parse command line arguments
@@ -62,7 +67,3 @@ def main():
         apply_transforms=not no_transform,
         show_lc=False
     )
-    
-        
-if __name__ == "__main__":
-    main()

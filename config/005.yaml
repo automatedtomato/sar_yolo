@@ -22,7 +22,7 @@ loss:
   lambda_obj: 1.0
   obj_threshold: 0.5
 model:
-  name: yolov3_sample_004
+  name: yolov3_sample_005
   anchors:
   - - - 36.0
       - 24.0
@@ -43,24 +43,24 @@ model:
     - - 15.0
       - 11.0
   grid_sizes:
-  - 13
-  - 26
-  - 52
-  input_size: 416
+  - 15
+  - 30
+  - 60
+  input_size: 480
   n_classes: 0
 optimizer:
-  lr: 0.00005
+  lr: 0.001
   type: adam
-  weight_decay: 0
+  weight_decay: 0.001
 training:
   log_interval: 100
   accumulation_steps: 4
-  n_epochs: 50
-  patience: 10
-  save_path: 004_best_model.pt
+  n_epochs: 1
+  patience: ~
+  save_path: 005_best_model.pt
 evaluating:
   iou_threshold: 0.5
   nms_threshold: 0.5
   conf_threshold: 0.5
-  fig_path: figures/004_lr.png
-  metrics_path: metrics/004_metrics.csv
+  fig_path: figures/005_lr.png
+  metrics_path: ../metrics/005_metrics.csv

@@ -16,6 +16,7 @@ class DataStream:
         """
         self.client = storage.Client()
         self.bucket = self.client.get_bucket(bucket_name)
+        print(f"\n{__name__}:: Connected to GSC bucket: {bucket_name}")
 
     def get_file_list(self, file_extension: str, prefix: str) -> list:
         """

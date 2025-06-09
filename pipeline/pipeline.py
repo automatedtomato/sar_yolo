@@ -20,13 +20,16 @@ class Pipeline:
         config_path: str,
         ):
         
+        self.config_path = config_path
+        
         # Load configuration file
         config = load_config(config_path)
         self.config = validate_config(config)
         
         # Initialize data stream
-        self.bucket_name = config['data']['bucket_name']
-        self.data_stream = DataStream(self.bucket_name)
+        bucket_name = config['data']['bucket_name']
+        self.data_stream = DataStream(bucket_name)
+        
 
     def train_val_pipeline(
         self,
@@ -35,9 +38,11 @@ class Pipeline:
         show_lc: bool = True
         ):
         
+        torch.cuda.empty_cache()
+        
         # Optimize anchors with K-means clustering
         if optim_anchor:
-            anch_opt = AnchorOptimizer(self.config)
+            anch_opt = AnchorOptimizer(data_stream=self.data_stream, config_path=self.config_path)
             optimized = anch_opt.optimize_anchors(9)
             anch_opt.update_config(optimized, backup=False)
             self.config = load_config(self.config_path)
@@ -50,7 +55,7 @@ class Pipeline:
             transforms.RandomHorizontalFlip(p=0.25), # diversify perspective
             transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.05), # diversify lighting condition
             transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0)), # simulate noise
-            transforms.RandomResizedCrop(size=416, scale=(0.8, 1.0)), # simulate altitude change
+            # transforms.RandomResizedCrop(size=416, scale=(0.8, 1.0)), # simulate altitude change
             transforms.RandomRotation(degrees=3) # diversify orientation
         ])
             
@@ -59,11 +64,13 @@ class Pipeline:
             config=self.config,
             transform=transform if apply_transforms else None
         )
+        if apply_transforms:
+            print(f"\n{__name__}:: Data transforms are applied to the dataset. Total {len(train_loader.dataset)} images are used for training.")
 
         model = YOLOv3(self.config)
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        print(f"\nUsing device: {device}")
+        print(f"\n{__name__}:: Using device: {device}")
 
         model = model.to(device)
 
@@ -75,9 +82,9 @@ class Pipeline:
             device=device
         )
 
-        learning_curve(train_history, val_history, show_fig = show_lc, save_path=self.config['evaluating']['fig_path'])
+        learning_curve(train_history, val_history, show_fig = show_lc, fig_path=self.config['evaluating']['fig_path'])
         
-        evaluator = YOLOv3Evaluator(device, self.config)
+        evaluator = YOLOv3Evaluator(device=device, config=self.config)
         metrics = evaluator.eval_model(
             model=model,
             test_loader=test_loader,

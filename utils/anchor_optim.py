@@ -37,6 +37,8 @@ class AnchorOptimizer:
 
         else:
             raise ValueError("Either config or config_path must be provided")
+        
+        print(f'\n{__name__}:: Anchor optimizer initialized')
 
     def calc_box_dimensions(
         self, dataset_type: str = "train"
@@ -151,6 +153,7 @@ class AnchorOptimizer:
         """
 
         # Collect boundign box dimensions
+        print(f"\n{__name__}:: Collecting bounding box dimensions for {dataset_type} dataset...")
         box_dimensions = self.calc_box_dimensions(dataset_type)
 
         if not box_dimensions:
@@ -168,12 +171,12 @@ class AnchorOptimizer:
 
         px_dims = np.array(px_dims)
 
-        logger.info(f"Running K-means clustering with {n_anchors} clusters...")
-        logger.info(f"Box dimensions statistics:")
-        logger.info(f"  Mean: {px_dims.mean(axis=0)}")
-        logger.info(f"  STD: {px_dims.std(axis=0)}")
-        logger.info(f"  Min: {px_dims.min(axis=0)}")
-        logger.info(f"  Max: {px_dims.max(axis=0)}")
+        print(f"\n{__name__}:: \nRunning K-means clustering with {n_anchors} clusters...")
+        print(f"Box dimensions statistics:")
+        print(f"  Mean: {px_dims.mean(axis=0)}")
+        print(f"  STD: {px_dims.std(axis=0)}")
+        print(f"  Min: {px_dims.min(axis=0)}")
+        print(f"  Max: {px_dims.max(axis=0)}")
 
         kmeans = KMeans(n_clusters=n_anchors, n_init=10)
         kmeans.fit(px_dims)
@@ -199,9 +202,9 @@ class AnchorOptimizer:
             scale_anchors = sorted_anchors[start_idx:end_idx].tolist()
             yolo_anchors.append(scale_anchors)
 
-        logger.info("Calculated anchors:")
+        print("\nCalculated anchors:")
         for i, scale_anchors in enumerate(yolo_anchors):
-            logger.info(f"  Scale {i}: {scale_anchors}")
+            print(f"  Scale {i}: {scale_anchors}")
         logger.info(yolo_anchors)
 
         return yolo_anchors
@@ -229,8 +232,8 @@ class AnchorOptimizer:
             with open(self.config_path, "w") as f:
                 yaml.dump(self.config, f, default_flow_style=False, allow_unicode=True)
 
-            logger.info(f"Updated anchors in config file: {self.config_path}")
+            print(f"\n{__name__}:: Updated anchors in config file: {self.config_path}")
             return True
         except Exception as e:
-            logger.error(f"Failed to update anchors in config file: {e}")
+            logger.error(f"{__name__}:: Failed to update anchors in config file: {e}")
             return False

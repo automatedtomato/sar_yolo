@@ -90,7 +90,7 @@ def train_model(
     # Move model to device
     model = model.to(device)
 
-    print("Training model...")
+    print(f"\n{__name__}:: \nTraining model...")
     print(f"  Number of epochs: {n_epochs}")
     print(f"  Device: {device}")
     print(f"  Patience: {patience}")
