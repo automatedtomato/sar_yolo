@@ -20,25 +20,32 @@ class AnchorOptimizer:
         config_path (str): Configuration file path
     """
 
-    def __init__(self, data_stream: DataStream, config: dict[str, Any] = None, config_path: str=None):
+    def __init__(
+        self,
+        data_stream: DataStream,
+        config: dict[str, Any] = None,
+        config_path: str = None,
+    ):
         self.data_stream = data_stream
-        
+
         if config is None and config_path is not None:
             self.config_path = config_path
             self.config = load_config(config_path)
-            
+
         elif config is not None and config_path is None:
             self.config = config
-            
+
         elif config is not None and config_path is not None:
-            logger.warining("Both config and config_path are provided. Using config_path.")
+            logger.warining(
+                "Both config and config_path are provided. Using config_path."
+            )
             self.config_path = config_path
             self.config = load_config(config_path)
 
         else:
             raise ValueError("Either config or config_path must be provided")
-        
-        print(f'\n{__name__}:: Anchor optimizer initialized')
+
+        print(f"\n{__name__}:: Anchor optimizer initialized")
 
     def calc_box_dimensions(
         self, dataset_type: str = "train"
@@ -153,7 +160,9 @@ class AnchorOptimizer:
         """
 
         # Collect boundign box dimensions
-        print(f"\n{__name__}:: Collecting bounding box dimensions for {dataset_type} dataset...")
+        print(
+            f"\n{__name__}:: Collecting bounding box dimensions for {dataset_type} dataset..."
+        )
         box_dimensions = self.calc_box_dimensions(dataset_type)
 
         if not box_dimensions:
@@ -171,7 +180,9 @@ class AnchorOptimizer:
 
         px_dims = np.array(px_dims)
 
-        print(f"\n{__name__}:: \nRunning K-means clustering with {n_anchors} clusters...")
+        print(
+            f"\n{__name__}:: \nRunning K-means clustering with {n_anchors} clusters..."
+        )
         print(f"Box dimensions statistics:")
         print(f"  Mean: {px_dims.mean(axis=0)}")
         print(f"  STD: {px_dims.std(axis=0)}")

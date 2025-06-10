@@ -32,12 +32,12 @@ def create_dataloader(
     train_config = config["data"]["train"]
     val_config = config["data"]["val"]
     test_config = config["data"]["test"]
-    
+
     if load_ratio > 1.0 or load_ratio <= 0.0:
         raise ValueError("Load ratio must be between 0.0(not included) and 1.0")
-    
-    model_grid_sizes = config['model']['grid_sizes']
-    model_n_classes = config['model']['n_classes']
+
+    model_grid_sizes = config["model"]["grid_sizes"]
+    model_n_classes = config["model"]["n_classes"]
 
     train_dataset = SaRDataset(
         data_stream=data_stream,
@@ -124,7 +124,7 @@ def create_dataloader(
 def collate_fn(
     batch: list[tuple[torch.Tensor, list[torch.Tensor]]],
     grid_sizes: list[int],
-    n_classes: int=0,
+    n_classes: int = 0,
 ) -> tuple[torch.Tensor, list[torch.Tensor]]:
     """
     Custom collate function for DataLoader
@@ -153,10 +153,10 @@ def collate_fn(
         else:  # if no targets, create zero tensor
             grid_size = grid_sizes[i]
             targets_batch[i] = torch.zeros(
-                batch[0][0].shape[0], # use batch_size from image if available
+                batch[0][0].shape[0],  # use batch_size from image if available
                 grid_size,
                 grid_size,
-                5 + n_classes
+                5 + n_classes,
             )
 
     return images_batch, targets_batch

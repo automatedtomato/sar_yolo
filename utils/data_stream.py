@@ -16,25 +16,26 @@ class DataStream:
             bucket_name (str): GSC bucket name
             dir_path (str): path to directory containing images and annotations
         """
-        
+
         if bucket_name is not None and dir_path is None:
             self.use_gcs = True
             self.client = storage.Client()
             self.bucket = self.client.get_bucket(bucket_name)
             print(f"\n{__name__}:: Connected to GSC bucket: {bucket_name}")
-            
+
         elif bucket_name is None and dir_path is not None:
             self.use_gcs = False
             self.dir_path = dir_path
             print(f"\n{__name__}:: Connected to directory: {dir_path}")
 
-            
         elif bucket_name is not None and dir_path is not None:
-            logger.warining("Both bucket_name and dir_path are provided. Using dir_path.")
+            logger.warining(
+                "Both bucket_name and dir_path are provided. Using dir_path."
+            )
             self.use_gcs = False
             self.dir_path = dir_path
             print(f"\n{__name__}:: Connected to directory: {dir_path}")
-            
+
         else:
             raise ValueError("Either bucket_name or dir_path must be provided")
 
@@ -48,7 +49,6 @@ class DataStream:
         Returns:
             list: List of file paths
         """
-        
 
         if self.use_gcs:
             blobs = self.bucket.list_blobs(prefix=prefix)
@@ -63,14 +63,14 @@ class DataStream:
                 logger.error(
                     f"No files found with extension {file_extension} and prefix {prefix}"
                 )
-                
+
         else:
             file_list = [
                 os.path.join(self.dir_path, prefix, f)
                 for f in os.listdir(os.path.join(self.dir_path, prefix))
                 if f.endswith(file_extension)
             ]
-            
+
             if not file_list:
                 logger.error(
                     f"No files found with extension {file_extension} and prefix {prefix}"
@@ -87,7 +87,7 @@ class DataStream:
         Returns:
             Image: PIL image
         """
-        
+
         if self.use_gcs:
             try:
                 blob = self.bucket.blob(file_path)
@@ -154,7 +154,7 @@ class DataStream:
                 logger.error(f"Failed to load annotation from {file_path}: {e}")
 
                 return None
-            
+
     def generate_data(
         self,
         img_extension: str,

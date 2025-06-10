@@ -3,10 +3,10 @@ import torch.nn as nn
 
 
 class ScalePrediction(nn.Module):
-    def __init__(self, in_channels: int, n_classes: int=0):
+    def __init__(self, in_channels: int, n_classes: int = 0):
 
         super().__init__()
-        
+
         self.n_classes = n_classes
 
         # Prediction layer (3 anchors, 5 outputs)
@@ -25,7 +25,6 @@ class ScalePrediction(nn.Module):
                 kernel_size=1,
             ),
         )
-
 
     def forward(self, x):
         output = self.pred(x)

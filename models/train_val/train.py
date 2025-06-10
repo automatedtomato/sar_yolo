@@ -49,7 +49,6 @@ def train_model(
     save_path = config["training"]["save_path"]
     log_interval = config["training"].get("log_interval", 10)
     accumulation_steps = config["training"].get("accumulation_steps", 1)
-    
 
     # Create save directory
     # os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -109,11 +108,11 @@ def train_model(
             # Forward pass
             outputs = model(images)
             losses = criterion(outputs, targets, **config["loss"])
-            
+
             # Accumulate gradients
-            loss = losses['total_loss'] / accumulation_steps
+            loss = losses["total_loss"] / accumulation_steps
             loss.backward()
-            
+
             # Update loss
             train_losses["total"] += losses["total_loss"].item()
             train_losses["coord"] += losses["coord_loss"].item()
@@ -121,8 +120,10 @@ def train_model(
             train_losses["noobj"] += losses["noobj_loss"].item()
             train_losses["class"] += losses["class_loss"].item()
             train_batches += 1
-            
-            if (batch_idx + 1) % accumulation_steps == 0 or (batch_idx + 1) == len(train_loader):
+
+            if (batch_idx + 1) % accumulation_steps == 0 or (batch_idx + 1) == len(
+                train_loader
+            ):
                 optimizer.step()
                 optimizer.zero_grad()
 

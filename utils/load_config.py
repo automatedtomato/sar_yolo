@@ -69,18 +69,13 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
                 "annot_path": "data/new_dataset3/All labels with Pose information/labels",
             },
         },
-        "dataloader":{
-            "batch_size": 8,
-            "num_workers": 4,
-            "pin_memory": True
-            },
-        
+        "dataloader": {"batch_size": 8, "num_workers": 4, "pin_memory": True},
         "training": {
             "log_interval": 100,
             "accumulation_steps": 1,
             "n_epochs": 10,
             "patience": 3,
-            "save_path": "sample.pt"
+            "save_path": "sample.pt",
         },
         "loss": {
             "lambda_coord": 5,
@@ -95,8 +90,8 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
             "nms_threshold": 0.5,
             "conf_threshold": 0.5,
             "fig_path": "figures/sample_lr.png",
-            "metrics_path": "metrics/sample_metrics.csv"
-        }
+            "metrics_path": "metrics/sample_metrics.csv",
+        },
     }
 
     def _merge_config(default: dict, user: dict) -> dict:

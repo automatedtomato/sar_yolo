@@ -8,17 +8,18 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
+
 class YOLOv3(nn.Module):
-    
     """
     YOLOv3 model
 
     Args:
         === Either config or n_classes must be provided ===
-        n_classes (int, optional): Number of classes 
+        n_classes (int, optional): Number of classes
         in_channels (int): Number of input channels, default to 3
         config (dict, optional): Configuration dictionary
     """
+
     def __init__(
         self,
         config: dict[str, Any] = None,
@@ -27,9 +28,8 @@ class YOLOv3(nn.Module):
         in_channels: int = 3,
     ):
 
-
         super().__init__()
-        
+
         if config is not None and n_classes is None:
             self.n_classes = config["model"]["n_classes"]
         elif config is None and n_classes is not None:
@@ -43,7 +43,6 @@ class YOLOv3(nn.Module):
         self.backbone = Darknet53(in_channels=in_channels)
 
         self.head = YOLOv3Head(n_classes=self.n_classes)
-        
 
     def forward(self, x):
         deepest_feature_map, route_connection_2, route_connection_1 = self.backbone(x)
