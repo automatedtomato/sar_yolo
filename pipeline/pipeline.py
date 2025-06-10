@@ -2,7 +2,6 @@ from data.dataset import create_dataloader
 from utils import load_config, validate_config, AnchorOptimizer
 import torch
 import torchvision.transforms as transforms
-import torchvision
 
 from models.yolov3 import YOLOv3
 from models.train_val.train import train_model
@@ -30,10 +29,8 @@ class Pipeline:
     def __init__(
         self,
         config_path: str,
-        load_ratio: float = 1.0
         ):
         
-        self.load_ratio = load_ratio
         self.config_path = config_path
         
         # Load configuration file
@@ -54,8 +51,10 @@ class Pipeline:
 
     def train_val_pipeline(
         self,
+        load_ratio: float = 1.0,
         optim_anchor: bool = False,
         apply_transforms: bool = True,
+        schedule_lr: bool = False,
         show_lc: bool = True
         ):
         
@@ -85,7 +84,7 @@ class Pipeline:
             data_stream=self.data_stream,
             config=self.config,
             transform=transform if apply_transforms else None,
-            load_ratio=self.load_ratio
+            load_ratio=load_ratio
         )
         if apply_transforms:
             print(f"\n{__name__}:: Data transforms are applied to the dataset. Total {len(train_loader.dataset)} images are used for training.")
@@ -96,13 +95,27 @@ class Pipeline:
         print(f"\n{__name__}:: Using device: {device}")
 
         model = model.to(device)
-
+        
+        # Initialize optimizer
+        optimizer = torch.optim.Adam(model.parameters(), lr=self.config['optimizer']['lr'], weight_decay=self.config['optimizer']['weight_decay'])
+        
+        if schedule_lr:
+            scheduler = torch.optim.lr_scheduler.MultiStepLR(
+                optimizer=optimizer,
+                milestones=self.config['scheduler']['milestones'],
+                gamma=self.config['scheduler']['gamma']
+                )
+        else:
+            scheduler = None
+        
         model, train_history, val_history = train_model(
             model=model,
             train_loader=train_loader,
             val_loader=val_loader,
             config=self.config,
-            device=device
+            optimizer=optimizer,
+            device=device,
+            scheduler=scheduler
         )
 
         learning_curve(train_history, val_history, show_fig = show_lc, fig_path=self.config['evaluating']['fig_path'])

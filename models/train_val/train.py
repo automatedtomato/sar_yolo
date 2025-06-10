@@ -13,7 +13,7 @@ def train_model(
     train_loader: DataLoader,
     val_loader: DataLoader,
     config: dict[str, Any],
-    optimizer: torch.optim=None,
+    optimizer: torch.optim,
     criterion=yolo_loss,
     device: torch.device = torch.device("cpu"),
     scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = None,
@@ -50,18 +50,6 @@ def train_model(
     log_interval = config["training"].get("log_interval", 10)
     accumulation_steps = config["training"].get("accumulation_steps", 1)
     
-    # Initialize optimizer
-    if optimizer is None:
-        
-        lr = config['optimizer']['lr']
-        weight_decay = config['optimizer']['weight_decay']
-        
-        if config['optimizer']['type'] == 'adam':
-            optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-        
-        else:
-            # TODO: Add other optimizers
-            pass
 
     # Create save directory
     # os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -236,7 +224,7 @@ def train_model(
         if scheduler:
             if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
                 scheduler.step(avg_val_loss)
-            else:
+            elif isinstance(scheduler, torch.optim.lr_scheduler.MultiStepLR):
                 scheduler.step()
         print("-" * 60)
 

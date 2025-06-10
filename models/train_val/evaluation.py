@@ -128,6 +128,102 @@ class YOLOv3Evaluator:
         
         return iou
     
+    def _decode_ground_truth_grid(self, targets_grid: List[torch.Tensor]) -> List[torch.Tensor]:
+        """
+        Decodes ground truth targets from YOLO grid format to a list of raw bounding boxes per image.
+        Args:
+            targets_grid (List[torch.Tensor]): List of ground truth tensors in YOLO grid format,
+                                               e.g., [tensor(B, A, G, G, 5+C), tensor(B, A, G', G', 5+C), ...]
+        Returns:
+            List[torch.Tensor]: List of tensors, where each tensor corresponds to an image
+                                and contains its raw ground truth boxes in (N_objects, 5) format:
+                                [class_id, x_center, y_center, width, height]
+        """
+        decoded_targets_per_image = [[] for _ in range(targets_grid[0].shape[0])] # Initialize list for each image in batch
+
+        for scale_idx, grid_tensor in enumerate(targets_grid):
+            # grid_tensor shape: (batch_size, num_anchors, grid_h, grid_w, 5 + num_classes)
+            batch_size, num_anchors, grid_h, grid_w, _ = grid_tensor.shape
+            
+            # Create grid coordinates for this scale
+            grid_y, grid_x = torch.meshgrid(
+                torch.arange(grid_h),
+                torch.arange(grid_w),
+                indexing='ij'
+            )
+            grid_x = grid_x.to(self.device).float()
+            grid_y = grid_y.to(self.device).float()
+
+            for b in range(batch_size):
+                # For each image in the batch, iterate through anchors and grid cells
+                # Find cells with actual objects (where confidence/objectness is 1.0)
+                # Assuming the last element in the 5+C dimension is objectness for GT
+                # Or, more robustly, look for class_id != 0 or any non-zero bbox values
+                
+                # Reshape to (num_anchors * grid_h * grid_w, 5 + num_classes)
+                flat_grid = grid_tensor[b].view(-1, grid_tensor.shape[-1])
+                
+                # Filter out "empty" cells (where there's no object, typically indicated by all zeros or a specific value)
+                # A simple check: if any of the bbox coords or class_id is non-zero
+                # Assuming class_id is the first element, x, y, w, h follow (index 1 to 4)
+                # And 1.0 indicates presence of an object at the 5th element (objectness)
+                # Let's use the objectness score (index 4 in the first 5 elements for gt_bbox)
+                
+                # Find rows where the 5th element (objectness/confidence) is not zero
+                # For GT, it's usually 1.0 for valid boxes and 0.0 otherwise
+                object_mask = (flat_grid[:, 4] > 0).bool() # Assuming 5th element (index 4) is objectness/confidence
+                
+                if object_mask.sum() == 0:
+                    continue # No objects in this image for this scale
+
+                # Extract relevant data for actual objects
+                valid_boxes_raw = flat_grid[object_mask] # (N_objects_this_scale, 5 + num_classes)
+
+                # Now, we need to convert these grid-relative coordinates back to image-relative (0-1)
+                # For GT, x, y are already relative to the grid cell and w, h are relative to the anchor.
+                # The format is [class_id, x_grid, y_grid, w_grid, h_grid, objectness_score, ...]
+                # Where x_grid, y_grid are relative to the cell, w_grid, h_grid are relative to anchor/grid cell size.
+
+                # This is tricky because your loss function handles this.
+                # The simplest assumption is that `gt` in `yolo_loss` are already in [class_id, x_norm, y_norm, w_norm, h_norm]
+                # If your SaRDataset already converts annotations to a YOLO-specific grid format,
+                # the 5 elements for each cell usually contain:
+                # [object_present_score, x_offset, y_offset, w_scale, h_scale, class_probabilities]
+                # or [class_id, x_offset, y_offset, w_scale, h_scale] if objectness is implied or handled separately.
+
+                # Let's assume the 5 elements in the targets_grid[b, anchor_idx, grid_y, grid_x, :] are:
+                # [x_center_normalized_in_image, y_center_normalized_in_image, w_normalized_in_image, h_normalized_in_image, class_id]
+                # This is the most common raw target format.
+                # BUT, your print output shows [..., ..., ..., ..., 1.0000] as the 5th element (index 4)
+                # and class_id at index 0, and actual coordinates at 1-4.
+                # E.g., [0.1037, 0.8873, 0.1743, 0.0533, 1.0000]
+
+                # Let's re-interpret based on your print output:
+                # The 5th element (index 4) is the objectness score (1.0 if object, 0.0 if not)
+                # The 1st element (index 0) is the class_id
+                # The 2nd-5th elements (indices 1-4) are x_center, y_center, width, height (normalized to image size)
+
+                # So, filter by the objectness score (index 4)
+                object_mask = (flat_grid[:, 4] == 1.0).bool() # Only take cells that actually contain an object
+                
+                # Extract class_id and bounding box coordinates for valid objects
+                # Expected format: [class_id, x_center, y_center, width, height]
+                
+                # If targets are structured as [class_id, x_norm, y_norm, w_norm, h_norm] in the first 5 elements for object-containing cells:
+                # Then valid_boxes_info will be (N_objects, 5) with actual ground truth bounding boxes.
+                if object_mask.sum() > 0:
+                    valid_objects_data = flat_grid[object_mask][:, :5] # Take first 5 elements: class_id, x, y, w, h
+                    decoded_targets_per_image[b].append(valid_objects_data)
+        
+        final_decoded_targets = []
+        for targets_list_for_image in decoded_targets_per_image:
+            if targets_list_for_image:
+                final_decoded_targets.append(torch.cat(targets_list_for_image, dim=0))
+            else:
+                final_decoded_targets.append(torch.empty(0, 5).to(self.device)) # Ensure empty tensors have correct shape and device
+        
+        return final_decoded_targets
+    
     # ========== Postprocess results ==========
     
     def postprocess_raw_outputs(
@@ -339,10 +435,7 @@ class YOLOv3Evaluator:
             
             # Calculate IoU
             pred_boxes_xyxy = pred['boxes']
-            print(f"Shape of gt before slicing: {gt.shape}")
-            print(f"Content of gt before slicing: {gt}")
-            print(f"Shape of gt[:, 1:5]: {gt[:, 1:5].shape}")
-            print(f"Content of gt[:, 1:5]: {gt[:, 1:5]}")
+            
             gt_boxes_xyxy = self.xywh2xyxy(gt[:, 1:5]) # [class, x, y, w, h] -> [x1, y1, x2, y2]
             iou_matrix = self.calculate_iou(pred_boxes_xyxy, gt_boxes_xyxy)
             
@@ -532,6 +625,8 @@ class YOLOv3Evaluator:
                 
                 total_loss += losses['total_loss'].item()
                 
+                decoded_raw_targets = self._decode_ground_truth_grid(targets)
+                
                 # Get predictions
                 batch_preds = self.postprocess_raw_outputs(
                     outputs,
@@ -540,7 +635,7 @@ class YOLOv3Evaluator:
                 )
                 
                 all_preds.extend(batch_preds)
-                all_targets.extend(targets)
+                all_targets.extend(decoded_raw_targets)
                 
                             
         if return_each:        

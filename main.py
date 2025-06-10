@@ -49,6 +49,12 @@ if __name__ == "__main__":
         action='store_false',
         help='Apply data transforms'
     )
+    
+    parser.add_argument(
+        '--schedule-lr',
+        action='store_true',
+        help='Schedule learning rate'
+    )
 
     args = parser.parse_args()
 
@@ -56,6 +62,7 @@ if __name__ == "__main__":
     config_path = args.config
     optim_anchor = args.optim_anchor
     no_transform = args.no_transform
+    schedul_lr = args.schedule_lr
     
     
     pl = Pipeline(
@@ -65,5 +72,6 @@ if __name__ == "__main__":
     pl.train_val_pipeline(
         optim_anchor=optim_anchor,
         apply_transforms=not no_transform,
-        show_lc=False
+        show_lc=False,
+        schedule_lr=schedul_lr
     )
