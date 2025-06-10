@@ -327,7 +327,7 @@ class YOLOv3Evaluator:
             if len(gt) == 0:
                 # No ground truth
                 if len(pred['boxes']) > 0:
-                    all_fp.extend[1] * len(pred['boxes'])
+                    all_fp.extend([1] * len(pred['boxes']))
                 continue
             
             
@@ -339,8 +339,11 @@ class YOLOv3Evaluator:
             
             # Calculate IoU
             pred_boxes_xyxy = pred['boxes']
+            print(f"Shape of gt before slicing: {gt.shape}")
+            print(f"Content of gt before slicing: {gt}")
+            print(f"Shape of gt[:, 1:5]: {gt[:, 1:5].shape}")
+            print(f"Content of gt[:, 1:5]: {gt[:, 1:5]}")
             gt_boxes_xyxy = self.xywh2xyxy(gt[:, 1:5]) # [class, x, y, w, h] -> [x1, y1, x2, y2]
-            
             iou_matrix = self.calculate_iou(pred_boxes_xyxy, gt_boxes_xyxy)
             
             # Matching

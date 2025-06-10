@@ -196,3 +196,5 @@ cython_debug/
 
 # PyTorch Model
 *.pt
+
+sar_dataset/data/*

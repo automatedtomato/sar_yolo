@@ -1,0 +1,67 @@
+data:
+  annot_ext: .txt
+  source: file
+  data_dir: /home/automatedtomato/github.com/automatedtomato/sar-yolo/sar_dataset
+  img_ext: .png
+  test:
+    annot_path: data/new_dataset3/test/labels
+    img_path: data/new_dataset3/test/images
+  train:
+    annot_path: data/new_dataset3/train/labels
+    img_path: data/new_dataset3/train/images
+  val:
+    annot_path: data/new_dataset3/val/labels
+    img_path: data/new_dataset3/val/images
+dataloader:
+  batch_size: 8
+  num_workers: 4
+  pin_memory: true
+evaluating:
+  conf_threshold: 0.5
+  fig_path: figures/006_lr.png
+  iou_threshold: 0.5
+  metrics_path: ../metrics/006_metrics.csv
+  nms_threshold: 0.5
+loss:
+  lambda_class: 1.0
+  lambda_coord: 5.0
+  lambda_noobj: 0.5
+  lambda_obj: 1.0
+  obj_threshold: 0.5
+model:
+  anchors:
+  - - - 42.0
+      - 27.0
+    - - 34.0
+      - 58.0
+    - - 64.0
+      - 35.0
+  - - - 13.0
+      - 25.0
+    - - 28.0
+      - 20.0
+    - - 21.0
+      - 38.0
+  - - - 4.0
+      - 6.0
+    - - 8.0
+      - 14.0
+    - - 18.0
+      - 13.0
+  grid_sizes:
+  - 13
+  - 26
+  - 52
+  input_size: 416
+  n_classes: 0
+  name: yolov3_sample_006
+optimizer:
+  lr: 0.001
+  type: adam
+  weight_decay: 0.001
+training:
+  accumulation_steps: 1
+  log_interval: 100
+  n_epochs: 100
+  patience: ~
+  save_path: 006_best_model.pt
