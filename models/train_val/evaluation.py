@@ -472,7 +472,7 @@ class YOLOv3Evaluator:
 
             if len(matched_ious) > 0:
                 total_iou += sum(matched_ious)
-                num_matched += len(matched_ious)
+                n_matched += len(matched_ious)
 
         # Calculate metrics
         n_tp = sum(all_tp)
