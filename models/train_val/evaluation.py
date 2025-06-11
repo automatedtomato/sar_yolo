@@ -9,6 +9,14 @@ from torch.utils.data import DataLoader
 from models.loss_func.yolo_loss import yolo_loss
 
 from utils.load_config import load_config
+from utils.data_stream import DataStream
+
+from data.dataset import create_dataloader
+
+from models.yolov3 import YOLOv3
+import os
+
+import torchvision.transforms as transforms
 
 logger = getLogger(__name__)
 
@@ -56,9 +64,9 @@ class YOLOv3Evaluator:
             raise ValueError("Either config or config_path must be provided")
 
         self.device = device
-        self.anchors = torch.tensor(config["model"]["anchors"]).to(device)
-        self.grid_sizes = config["model"]["grid_sizes"]
-        self.img_size = config["model"]["input_size"]
+        self.anchors = torch.tensor(self.config["model"]["anchors"]).to(self.device)
+        self.grid_sizes = self.config["model"]["grid_sizes"]
+        self.img_size = self.config["model"]["input_size"]
 
         print(f"\n{__name__}:: YOLOv3 evaluator initialized.")
 
@@ -694,6 +702,53 @@ class YOLOv3Evaluator:
             }
 
             return results
+        
+    def evaluate_saved_model(self, saved_model_path: str):
+
+        model = YOLOv3(self.config)
+        model.load_state_dict(torch.load(saved_model_path))
+        
+        if not os.path.exists(saved_model_path):
+            raise FileNotFoundError(f"Model not found at {saved_model_path}")
+        
+        print(f"\n{__name__}:: Loaded saved model from {saved_model_path}")
+        checkpoint = torch.load(saved_model_path, map_location=self.device)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        model = model.to(self.device)
+
+        model.eval()
+        
+        print(f"\n{__name__}:: Model loaded")
+        
+        source = self.config["data"]["source"]
+        if source == 'gcs':
+            bucket_name = self.config['data']['bucket_name']
+            data_stream = DataStream(bucket_name)
+        elif source == 'file':
+            data_dir = self.config['data']['data_dir']
+            data_stream = DataStream(dir_path=data_dir)
+        else:
+            raise ValueError("Data source must be either 'gcs' or 'file'.")
+        
+        transform = transforms.Compose(
+            [
+                transforms.Resize((self.config["model"]["input_size"], self.config["model"]["input_size"])),
+                transforms.ToTensor(),
+            ]
+        )
+        
+        _, _, test_loader = create_dataloader(
+            data_stream=data_stream,
+            config = self.config,
+            transform=transform
+        )
+        
+        metrics = self.eval_model(
+            model=model,
+            test_loader=test_loader
+        )
+        
+        return metrics, model
 
 
 def learning_curve(

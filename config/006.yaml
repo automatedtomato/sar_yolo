@@ -1,8 +1,8 @@
 data:
   annot_ext: .txt
-  source: file
   data_dir: /home/automatedtomato/github.com/automatedtomato/sar-yolo/sar_dataset
   img_ext: .png
+  source: file
   test:
     annot_path: data/new_dataset3/test/labels
     img_path: data/new_dataset3/test/images
@@ -30,41 +30,40 @@ loss:
   obj_threshold: 0.5
 model:
   anchors:
-  - - - 42.0
-      - 27.0
-    - - 34.0
-      - 58.0
-    - - 64.0
-      - 35.0
-  - - - 13.0
-      - 25.0
-    - - 28.0
-      - 20.0
-    - - 21.0
-      - 38.0
+  - - - 37.0
+      - 24.0
+    - - 29.0
+      - 50.0
+    - - 55.0
+      - 30.0
+  - - - 11.0
+      - 22.0
+    - - 24.0
+      - 17.0
+    - - 19.0
+      - 33.0
   - - - 4.0
-      - 6.0
-    - - 8.0
-      - 14.0
-    - - 18.0
-      - 13.0
+      - 5.0
+    - - 7.0
+      - 12.0
+    - - 15.0
+      - 11.0
   grid_sizes:
   - 13
   - 26
   - 52
-  input_size: 416
+  input_size: 480
   n_classes: 0
   name: yolov3_sample_006
 optimizer:
-  lr: 0.01
+  lr: 0.001
   type: adam
   weight_decay: 0.0005
 scheduler:
-  milestones: [10, 30, 60]
-  gamma: 0.1
+  type: lambda
 training:
   accumulation_steps: 1
-  log_interval: 100
-  n_epochs: 1
+  log_interval: 10
+  n_epochs: 5
   patience: 10
   save_path: 006_best_model.pt

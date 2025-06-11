@@ -63,6 +63,13 @@ def create_dataloader(
         collate_fn=lambda batch: collate_fn(batch, model_grid_sizes, model_n_classes),
         pin_memory=config["dataloader"]["pin_memory"],
     )
+    
+    val_test_transform = transforms.Compose(
+        [
+            transforms.Resize((config["model"]["input_size"], config["model"]["input_size"])),
+            transforms.ToTensor(),
+        ]
+    )
 
     val_dataset = SaRDataset(
         data_stream=data_stream,
@@ -75,7 +82,7 @@ def create_dataloader(
             },
         },
         output_size=output_size,
-        transform=transform,
+        transform=val_test_transform,
     )
 
     val_dataset = Subset(val_dataset, range(int(len(val_dataset) * load_ratio)))
@@ -100,7 +107,7 @@ def create_dataloader(
             },
         },
         output_size=output_size,
-        transform=transform,
+        transform=val_test_transform,
     )
 
     test_dataset = Subset(test_dataset, range(int(len(test_dataset) * load_ratio)))

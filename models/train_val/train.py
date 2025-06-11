@@ -227,9 +227,21 @@ def train_model(
                 scheduler.step(avg_val_loss)
             elif isinstance(scheduler, torch.optim.lr_scheduler.MultiStepLR):
                 scheduler.step()
+            elif isinstance(scheduler, torch.optim.lr_scheduler.LambdaLR):
+                scheduler.step()
         print("-" * 60)
 
     print(f"\nTraining finished. Best val loss = {best_val_loss:.4f}")
     print(f"Saving model to {save_path}")
 
     return model, train_history, val_history
+
+def custom_lr_lambda(epoch: int, initial_lr: float = 0.001) -> float:
+    if epoch < 10:
+        return 0.0001 / initial_lr
+    if epoch >=10 and epoch < 30:
+        return 0.001 / initial_lr
+    if epoch >= 30 and epoch < 60:
+        return 0.0005 / initial_lr
+    if epoch >= 60:
+        return 0.0001 / initial_lr

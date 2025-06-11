@@ -4,7 +4,7 @@ import torch
 import torchvision.transforms as transforms
 
 from models.yolov3 import YOLOv3
-from models.train_val.train import train_model
+from models.train_val.train import train_model, custom_lr_lambda
 from models.train_val.evaluation import learning_curve, YOLOv3Evaluator
 from utils.data_stream import DataStream
 
@@ -51,7 +51,7 @@ class Pipeline:
 
     def train_val_pipeline(
         self,
-        load_ratio: float = 1.0,
+        load_ratio: float = 0.1,
         optim_anchor: bool = False,
         apply_transforms: bool = True,
         schedule_lr: bool = False,
@@ -120,11 +120,21 @@ class Pipeline:
         )
 
         if schedule_lr:
-            scheduler = torch.optim.lr_scheduler.MultiStepLR(
-                optimizer=optimizer,
-                milestones=self.config["scheduler"]["milestones"],
-                gamma=self.config["scheduler"]["gamma"],
-            )
+            if self.config['scheduler']['type'] == 'multistep':
+                scheduler = torch.optim.lr_scheduler.MultiStepLR(
+                    optimizer=optimizer,
+                    milestones=self.config["scheduler"]["milestones"],
+                    gamma=self.config["scheduler"]["gamma"],
+                )
+            elif self.config['scheduler']['type'] == 'lambda':
+                scheduler = torch.optim.lr_scheduler.LambdaLR(
+                    optimizer=optimizer,
+                    lr_lambda=lambda epoch: custom_lr_lambda(epoch, self.config["optimizer"]["lr"]),
+                )
+            else:
+                raise ValueError(
+                    "Invalid scheduler type."
+                )
         else:
             scheduler = None
 
