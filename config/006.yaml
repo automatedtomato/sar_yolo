@@ -20,7 +20,7 @@ evaluating:
   conf_threshold: 0.5
   fig_path: figures/006_lr.png
   iou_threshold: 0.5
-  metrics_path: ../metrics/006_metrics.csv
+  metrics_path: ../metrics/metrics.csv
   nms_threshold: 0.5
 loss:
   lambda_class: 1.0
@@ -30,28 +30,28 @@ loss:
   obj_threshold: 0.5
 model:
   anchors:
-  - - - 37.0
-      - 24.0
+  - - - 43.0
+      - 28.0
+    - - 34.0
+      - 58.0
+    - - 64.0
+      - 35.0
+  - - - 13.0
+      - 25.0
     - - 29.0
-      - 50.0
-    - - 55.0
-      - 30.0
-  - - - 11.0
-      - 22.0
-    - - 24.0
-      - 17.0
-    - - 19.0
-      - 33.0
+      - 21.0
+    - - 21.0
+      - 38.0
   - - - 4.0
-      - 5.0
-    - - 7.0
-      - 12.0
-    - - 15.0
-      - 11.0
+      - 6.0
+    - - 8.0
+      - 14.0
+    - - 18.0
+      - 13.0
   grid_sizes:
-  - 13
-  - 26
-  - 52
+  - 15
+  - 30
+  - 60
   input_size: 480
   n_classes: 0
   name: yolov3_sample_006
@@ -62,8 +62,8 @@ optimizer:
 scheduler:
   type: lambda
 training:
-  accumulation_steps: 1
+  accumulation_steps: 2
   log_interval: 10
-  n_epochs: 5
+  n_epochs: 6
   patience: 10
   save_path: 006_best_model.pt

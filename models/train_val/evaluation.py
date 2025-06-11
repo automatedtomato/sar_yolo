@@ -127,8 +127,8 @@ class YOLOv3Evaluator:
         area2 = (boxes2[:, 2] - boxes2[:, 0]) * (boxes2[:, 3] - boxes2[:, 1])
 
         # Left top and right bottom
-        left_top = torch.max(boxes1[:, None:2], boxes2[:, :2])
-        right_bottom = torch.min(boxes1[:, None, 2:], boxes2[:, 2:])
+        left_top = torch.max(boxes1[:, None, :2], boxes2[None, :, :2])
+        right_bottom = torch.min(boxes1[:, None, 2:], boxes2[None, :, 2:])
 
         # Width and height
         width_height = (right_bottom - left_top).clamp(min=0)
@@ -137,7 +137,7 @@ class YOLOv3Evaluator:
         intersection = width_height[:, :, 0] * width_height[:, :, 1]
 
         # Union
-        union = area1[:, None] + area2 - intersection
+        union = area1[:, None] + area2[None, :] - intersection
 
         # IoU (prevent division by zero)
         iou = intersection / union + epsilon
@@ -706,7 +706,6 @@ class YOLOv3Evaluator:
     def evaluate_saved_model(self, saved_model_path: str):
 
         model = YOLOv3(self.config)
-        model.load_state_dict(torch.load(saved_model_path))
         
         if not os.path.exists(saved_model_path):
             raise FileNotFoundError(f"Model not found at {saved_model_path}")
@@ -745,7 +744,8 @@ class YOLOv3Evaluator:
         
         metrics = self.eval_model(
             model=model,
-            test_loader=test_loader
+            test_loader=test_loader,
+            config = self.config
         )
         
         return metrics, model

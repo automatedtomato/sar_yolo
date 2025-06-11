@@ -7,6 +7,7 @@ from models.yolov3 import YOLOv3
 from models.train_val.train import train_model, custom_lr_lambda
 from models.train_val.evaluation import learning_curve, YOLOv3Evaluator
 from utils.data_stream import DataStream
+from utils import update_metrics_csv
 
 import pandas as pd
 from logging import getLogger
@@ -51,7 +52,7 @@ class Pipeline:
 
     def train_val_pipeline(
         self,
-        load_ratio: float = 0.1,
+        load_ratio: float = 0.15,
         optim_anchor: bool = False,
         apply_transforms: bool = True,
         schedule_lr: bool = False,
@@ -161,9 +162,11 @@ class Pipeline:
             test_loader=test_loader,
             config=self.config,
         )
+        
+        update_metrics_csv(
+            csv_path=self.config["evaluating"]["metrics_path"],
+            metrics=metrics,
+            backup=False
+        )
 
-        metrics_df = pd.DataFrame(metrics, index=[0])
-        metrics_df.to_csv(self.config["evaluating"]["metrics_path"], index=False)
-
-        print(metrics_df)
         return metrics, model

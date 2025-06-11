@@ -1,2 +1,2 @@
-model,n_epochs,learning_rate,weight_decay,batch_size,accumulation_steps,total_loss,mAP,mAP_0.3,precision,recall,recall_0.3,IoU,f1_score,n_preds,n_ground_truths
-yolov3_sample_005,1,0.001,0.001,8,4,17847.0665,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1530
+datetime,model,n_epochs,learning_rate,weight_decay,batch_size,accumulation_steps,total_loss,mAP,mAP_0.3,precision,recall,recall_0.3,IoU,f1_score,n_preds,n_ground_truths
+2025-06-11 13:23:27,yolov3_sample_006,5,0.001,0.0005,8,1,8111.8079,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1,211254

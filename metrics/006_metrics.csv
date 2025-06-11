@@ -1,2 +1,0 @@
-model,n_epochs,learning_rate,weight_decay,batch_size,accumulation_steps,total_loss,mAP,mAP_0.3,precision,recall,recall_0.3,IoU,f1_score,n_preds,n_ground_truths
-yolov3_sample_006,1,0.01,0.0005,8,1,4079.8857,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,41818
