@@ -17,4 +17,6 @@ def update_metrics_csv(csv_path: str, metrics: dict[str, float | int], backup: b
     df = pd.concat([df, m_df], ignore_index=True)
     df.sort_values(by='datetime', ascending=False, inplace=True)
     
+    df.to_csv(csv_path, index=False)
+    
     return df

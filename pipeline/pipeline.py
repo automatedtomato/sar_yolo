@@ -52,7 +52,7 @@ class Pipeline:
 
     def train_val_pipeline(
         self,
-        load_ratio: float = 0.15,
+        load_ratio: float = 1.0,
         optim_anchor: bool = False,
         apply_transforms: bool = True,
         schedule_lr: bool = False,
